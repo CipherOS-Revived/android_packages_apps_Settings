@@ -661,15 +661,14 @@ public class AppRestrictionsFragment extends SettingsPreferenceFragment implemen
         }
 
         private void assertSafeToStartCustomActivity(Intent intent) {
-            // Activity can be started if it belongs to the same app
-            if (intent.getPackage() != null && intent.getPackage().equals(packageName)) {
-                return;
+            EventLog.writeEvent(0x534e4554, "223578534", -1 /* UID */, "");
             }
-            ResolveInfo resolveInfo = mPackageManager.resolveActivity(
-                    intent, PackageManager.MATCH_DEFAULT_ONLY);
 
-            if (resolveInfo == null) {
-                throw new ActivityNotFoundException("No result for resolving " + intent);
+            // Activity can be started if intent resolves to multiple activities
+            List<ResolveInfo> resolveInfos = AppRestrictionsFragment.this.mPackageManager
+                    .queryIntentActivities(intent, 0 /* no flags */);
+            if (resolveInfos.size() != 1) {
+                return;
             }
             // Prevent potential privilege escalation
             ActivityInfo activityInfo = resolveInfo.activityInfo;
